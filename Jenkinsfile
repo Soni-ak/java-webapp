@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         MAVEN_HOME = tool 'MAVEN_HOME'
-        DEPLOY_DIR = '/opt/tomcat/webapps'
+        DEPLOY_DIR = '/home/ubuntu/apache-tomcat-10.1.41/webapps'
     }
 
     stages {
@@ -28,7 +28,12 @@ pipeline {
                 sh '''
                     WAR_FILE=$(ls target/*.war | head -n 1)
                     if [ -f "$WAR_FILE" ]; then
-                        sudo cp "$WAR_FILE" $DEPLOY_DIR
+                        if [ ! -d "$DEPLOY_DIR" ]; then
+                            echo "Creating deployment directory $DEPLOY_DIR"
+                            mkdir -p $DEPLOY_DIR
+                        fi
+                        sudo cp "$WAR_FILE" $DEPLOY_DIR/
+                        echo "WAR file deployed successfully."
                     else
                         echo "WAR file not found!"
                         exit 1
