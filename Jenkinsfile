@@ -27,13 +27,22 @@ pipeline {
                 echo "🚀 Deploying WAR file to Tomcat..."
                 sh '''
                     WAR_FILE=$(ls target/*.war | head -n 1)
+
+                    if [ ! -d "$DEPLOY_DIR" ]; then
+                        echo "Creating deployment directory $DEPLOY_DIR"
+                        mkdir -p $DEPLOY_DIR
+                    fi
+
                     if [ -f "$WAR_FILE" ]; then
-                        if [ ! -d "$DEPLOY_DIR" ]; then
-                            echo "Creating deployment directory $DEPLOY_DIR"
-                            mkdir -p $DEPLOY_DIR
-                        fi
-                        sudo cp "$WAR_FILE" $DEPLOY_DIR/
-                        echo "WAR file deployed successfully."
+                        cp "$WAR_FILE" "$DEPLOY_DIR/"
+                        echo "WAR file copied successfully."
+
+                        # Optional: Restart Tomcat
+                        echo "🔄 Restarting Tomcat server..."
+                        /home/ubuntu/apache-tomcat-10.1.41/bin/shutdown.sh
+                        sleep 5
+                        /home/ubuntu/apache-tomcat-10.1.41/bin/startup.sh
+                        echo "✅ Tomcat restarted."
                     else
                         echo "WAR file not found!"
                         exit 1
